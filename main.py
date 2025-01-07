@@ -21,25 +21,20 @@ def interpret(packet):
             packet.payload[1],
             packet.payload[2:])
 
-def unpackAsSignedChar(b):
-    return struct.unpack('>1b',bytes([b]))[0]
-
-
 byteIterator = getByteIterator("192.168.20.70", 8888)
-#byteIterator = getByteIterator("localhost", 8089)
 packetIterator = toPacketIterator(byteIterator)
 
 decoders = [CommandPacketDecoder(), StatePacketDecoder(), DoorPacketDecoder()]
 knowledge = {}
 
-def updateKnowledge(src, dst, dataKey, data, op):
+def updateKnowledge(packet, dataKey, data):
     # dst's understanding about src @ dataKey
-    key = (src, dst, dataKey)
-    how = "query" if op == 0x80 else "advertisement"
+    key = (packet.src, packet.dst, dataKey)
+    how = "query" if packet.op == 0x80 else "advertisement"
     if key not in knowledge:
-        print(f"[bootstrap, {how}] {dst} learned {src}[{dataKey}] = {data}")
+        print(f"[bootstrap, {how}] {toHexStr(packet.dst)} learned {toHexStr(packet.src)}[{dataKey}] = {data}")
     elif knowledge[key] != data:
-        print(f"[{how}] {dst} learned {src}[{dataKey}] = {knowledge[key]} -> {data}")
+        print(f"[{how}] {toHexStr(packet.dst)} learned {toHexStr(packet.src)}[{dataKey}] = {knowledge[key]} -> {data}")
     knowledge[key] = data
 
 
@@ -63,16 +58,9 @@ for packet in packetIterator:
                 decoded = True
                 decoded = decoder.decode(interpretted.payload)
                 for k in sorted(decoded.keys()):
-                    updateKnowledge(toHexStr(interpretted.src), toHexStr(interpretted.dst), k, decoded[k], "TODO")
+                    updateKnowledge(interpretted, k, decoded[k])
         if decoded:
             continue
 
-        if interpretted.op == 0x80:
-            # dst learns from src about a register through a query
-            register = toHexStr(interpretted.register)
-            data = listToHexStr(interpretted.payload)
-            updateKnowledge(toHexStr(interpretted.src), toHexStr(interpretted.dst), register, data, interpretted.op)
-        elif interpretted.op == 0x40 and len(interpretted.payload) > 1:
-            register = toHexStr(interpretted.register)
-            data = listToHexStr(interpretted.payload)
-            updateKnowledge(toHexStr(interpretted.src), toHexStr(interpretted.dst), register, data, interpretted.op)
+        if interpretted.op == 0x80 or (interpretted.op == 0x40 and len(interpretted.payload) > 1):
+            updateKnowledge(interpretted, toHexStr(interpretted.register), listToHexStr(interpretted.payload))
