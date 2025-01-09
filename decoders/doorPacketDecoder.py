@@ -1,4 +1,4 @@
-from .util import unpackAsSignedChar, unpackAsHex, unpackAsShort
+from .util import unpackAsHex
 
 flags = {
     1: {

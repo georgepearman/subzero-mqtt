@@ -37,7 +37,6 @@ def updateKnowledge(packet, dataKey, data):
         print(f"[{how}] {toHexStr(packet.dst)} learned {toHexStr(packet.src)}[{dataKey}] = {knowledge[key]} -> {data}")
     knowledge[key] = data
 
-
 for packet in packetIterator:
     if mode == 0:
         print(packet)
@@ -47,7 +46,6 @@ for packet in packetIterator:
         else:
             print(packet)
     elif mode == 2:
-
         if not isinstance(packet, Packet):
             print(packet)
             continue

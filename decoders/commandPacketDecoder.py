@@ -32,7 +32,7 @@ class Decoder:
 
         payloadCopy = payload.copy()
 
-        data["Fridge Set Point"] = unpackAsSignedChar(payload[1])
+        data["Refridgerator Set Point"] = unpackAsSignedChar(payload[1])
         payloadCopy[1] = 0
 
         data["Long Vacation Number?"] = f"{unpackAsHex(payload[3])} {unpackAsHex(payload[4])}"
@@ -50,7 +50,7 @@ class Decoder:
             payloadCopy[i] &= mask
 
         for i in range(len(payloadCopy)):
-            data[f"Payload[{i:02d}]"] = unpackAsHex(payloadCopy[i])
+            data[f"{i:02d}"] = unpackAsHex(payloadCopy[i])
 
         return data
 

@@ -1,17 +1,23 @@
-from .util import unpackAsSignedChar, unpackAsHex, unpackAsShort
+from .util import unpackAsSignedChar, unpackAsHex, unpackAsUnsignedInt
 
 flags = {
-        11: {}, # jumps 32 -> 33 frequently or its a temp around freezing point?
-        15: {
-            "15Bit5": 0b00010000
-        }, # jumps 17 -> 1 -> 17 frequently
+        14: {},
+        15: {},
+        16: {},
+        19: {},
         24: {
             "Water Dispensing": 0b1000000
-        }
-        # 30, 33, 34, 35 switch between 2 values when dispensing water
+        },
+        28: {},
+        29: {},
+        30: {},
+        33: {},
+        34: {},
+        50: {}
 }
 
-ignore = ["Counter", "15Bit5"]#, "Payload[11]", "Payload[15]", "Payload[17]", "Payload[20]"]
+def copyWithLabel(label, data, payload, i):
+    data[f"{i:02d}_{label}"] = payload[i]
 
 class Decoder:
 
@@ -22,45 +28,66 @@ class Decoder:
     def decode(self, payload):
         data = {}
 
-        payloadCopy = payload.copy()
+        # To Find:
+        #   - air filter life (based on time)
+        #   - water filter life (based on time)
+        #   - 2 evaporator fan speeds
 
-        data["Counter"] = unpackAsShort(payload, 0)
-        payloadCopy[0] = 0
-        payloadCopy[1] = 0
-
-        data["Temperature 2 (Condenser)?"] = unpackAsSignedChar(payload[2])
-        payloadCopy[2] = 0
-
-        data["Temperature 7"] = unpackAsSignedChar(payload[7])
-        payloadCopy[7] = 0
-
-        data["Temperature 11"] = unpackAsSignedChar(payload[11])
-        payloadCopy[11] = 0
-
-        data["Temperature 13?"] = unpackAsSignedChar(payload[13])
-        payloadCopy[13] = 0
-
-        data["Temperature 17"] = unpackAsSignedChar(payload[17])
-        payloadCopy[17] = 0
-
-        data["Temperature 20"] = unpackAsSignedChar(payload[20])
-        payloadCopy[20] = 0
-
-        data["Temperature 28 (Ambient)??"] = unpackAsSignedChar(payload[28])
-        payloadCopy[28] = 0
+        copyWithLabel("Model Code?", data, payload, 0)
+        data["Epoch Seconds"] = unpackAsUnsignedInt(payload[1:5])
+        copyWithLabel("Constant", data, payload, 5)
+        copyWithLabel("Constant", data, payload, 6)
+        data["Refridgerator Cabinet Temperature"] = unpackAsSignedChar(payload[7])
+        copyWithLabel("Constant", data, payload, 8)
+        copyWithLabel("Constant", data, payload, 9)
+        copyWithLabel("Constant", data, payload, 10)
+        data["Refridgerator Evaporator Temperature"] = unpackAsSignedChar(payload[11])
+        copyWithLabel("Constant", data, payload, 12)
+        copyWithLabel("Constant", data, payload, 13)
+        # 14 is a flag
+        # 15 is a flag
+        # 16 is a flag
+        data["Freezer Cabinet Temperature"] = unpackAsSignedChar(payload[17])
+        copyWithLabel("Unknown", data, payload, 18)
+        # 19 is a flag
+        data["Freezer Evaporator Temperature"] = unpackAsSignedChar(payload[20])
+        copyWithLabel("Unknown", data, payload, 21)
+        copyWithLabel("Unknown", data, payload, 22)
+        copyWithLabel("Constant", data, payload, 23)
+        # 24 is a flag - water dispensing
+        copyWithLabel("Constant", data, payload, 25)
+        copyWithLabel("Constant", data, payload, 26)
+        copyWithLabel("Constant", data, payload, 27)
+        # 28 is a flag
+        # 29 is a flag
+        # 30 is a flag
+        copyWithLabel("Constant", data, payload, 31)
+        copyWithLabel("Constant", data, payload, 32)
+        # 33 is a flag
+        # 34 is a flag
+        data["Water Flow Meter"] = unpackAsUnsignedInt(payload[35:39])
+        copyWithLabel("Constant", data, payload, 39)
+        copyWithLabel("Constant", data, payload, 40)
+        copyWithLabel("Constant", data, payload, 41)
+        copyWithLabel("Constant", data, payload, 42)
+        copyWithLabel("Constant", data, payload, 43)
+        copyWithLabel("Unknown", data, payload, 44)
+        copyWithLabel("Constant", data, payload, 45)
+        copyWithLabel("Constant", data, payload, 46)
+        copyWithLabel("Constant", data, payload, 47)
+        copyWithLabel("Constant", data, payload, 48)
+        copyWithLabel("Unknown", data, payload, 49)
+        # 50 is a flag
+        copyWithLabel("Constant", data, payload, 51)
+        copyWithLabel("Constant", data, payload, 52)
+        copyWithLabel("Constant", data, payload, 53)
+        copyWithLabel("Constant", data, payload, 54)
 
         for i in flags:
             mask = 0b11111111
             for label in sorted(flags[i].keys()):
                 data[label] = (payload[i] & flags[i][label]) > 0
                 mask ^= flags[i][label]
-            payloadCopy[i] &= mask
+            data[f"{i:02d}_Flag"] = payload[i] & mask
 
-        for i in range(len(payloadCopy)):
-            data[f"Payload[{i:02d}]"] = unpackAsSignedChar(payloadCopy[i])
-
-        for k in ignore:
-            data.pop(k, None)
         return data
-
-
