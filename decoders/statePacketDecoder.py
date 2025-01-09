@@ -1,23 +1,13 @@
-from .util import unpackAsSignedChar, unpackAsHex, unpackAsUnsignedInt
+from .util import unpackAsSignedChar, unpackAsHex, unpackAsUnsignedInt, unpackAsUnsignedShort
 
 flags = {
-        14: {},
-        15: {},
-        16: {},
-        19: {},
         24: {
             "Water Dispensing": 0b1000000
-        },
-        28: {},
-        29: {},
-        30: {},
-        33: {},
-        34: {},
-        50: {}
+        }
 }
 
-def copyWithLabel(label, data, payload, i):
-    data[f"{i:02d}_{label}"] = payload[i]
+def copy(data, payload, i):
+    data[f"{i:02d}"] = payload[i]
 
 class Decoder:
 
@@ -33,55 +23,54 @@ class Decoder:
         #   - water filter life (based on time)
         #   - 2 evaporator fan speeds
 
-        copyWithLabel("Model Code?", data, payload, 0)
+        data["Model Code?"] = payload[0]
         data["Epoch Seconds"] = unpackAsUnsignedInt(payload[1:5])
-        copyWithLabel("Constant", data, payload, 5)
-        copyWithLabel("Constant", data, payload, 6)
+        copy(data, payload, 5)
+        copy(data, payload, 6)
         data["Refridgerator Cabinet Temperature"] = unpackAsSignedChar(payload[7])
-        copyWithLabel("Constant", data, payload, 8)
-        copyWithLabel("Constant", data, payload, 9)
-        copyWithLabel("Constant", data, payload, 10)
+        copy(data, payload, 8)
+        copy(data, payload, 9)
+        copy(data, payload, 10)
         data["Refridgerator Evaporator Temperature"] = unpackAsSignedChar(payload[11])
-        copyWithLabel("Constant", data, payload, 12)
-        copyWithLabel("Constant", data, payload, 13)
-        # 14 is a flag
-        # 15 is a flag
-        # 16 is a flag
+        copy(data, payload, 12)
+        copy(data, payload, 13)
+        copy(data, payload, 14)
+        data["Freezer Evaporator Fan RPM"] = unpackAsUnsignedShort(payload[15:17])
         data["Freezer Cabinet Temperature"] = unpackAsSignedChar(payload[17])
-        copyWithLabel("Unknown", data, payload, 18)
-        # 19 is a flag
+        copy(data, payload, 18)
+        copy(data, payload, 19)
         data["Freezer Evaporator Temperature"] = unpackAsSignedChar(payload[20])
-        copyWithLabel("Unknown", data, payload, 21)
-        copyWithLabel("Unknown", data, payload, 22)
-        copyWithLabel("Constant", data, payload, 23)
+        copy(data, payload, 21)
+        copy(data, payload, 22)
+        copy(data, payload, 23)
         # 24 is a flag - water dispensing
-        copyWithLabel("Constant", data, payload, 25)
-        copyWithLabel("Constant", data, payload, 26)
-        copyWithLabel("Constant", data, payload, 27)
-        # 28 is a flag
-        # 29 is a flag
-        # 30 is a flag
-        copyWithLabel("Constant", data, payload, 31)
-        copyWithLabel("Constant", data, payload, 32)
-        # 33 is a flag
-        # 34 is a flag
+        copy(data, payload, 25)
+        copy(data, payload, 26)
+        copy(data, payload, 27)
+        copy(data, payload, 28)
+        copy(data, payload, 29)
+        copy(data, payload, 30)
+        copy(data, payload, 31)
+        copy(data, payload, 32)
+        copy(data, payload, 33)
+        copy(data, payload, 34)
         data["Water Flow Meter"] = unpackAsUnsignedInt(payload[35:39])
-        copyWithLabel("Constant", data, payload, 39)
-        copyWithLabel("Constant", data, payload, 40)
-        copyWithLabel("Constant", data, payload, 41)
-        copyWithLabel("Constant", data, payload, 42)
-        copyWithLabel("Constant", data, payload, 43)
-        copyWithLabel("Unknown", data, payload, 44)
-        copyWithLabel("Constant", data, payload, 45)
-        copyWithLabel("Constant", data, payload, 46)
-        copyWithLabel("Constant", data, payload, 47)
-        copyWithLabel("Constant", data, payload, 48)
-        copyWithLabel("Unknown", data, payload, 49)
-        # 50 is a flag
-        copyWithLabel("Constant", data, payload, 51)
-        copyWithLabel("Constant", data, payload, 52)
-        copyWithLabel("Constant", data, payload, 53)
-        copyWithLabel("Constant", data, payload, 54)
+        copy(data, payload, 39)
+        copy(data, payload, 40)
+        copy(data, payload, 41)
+        copy(data, payload, 42)
+        copy(data, payload, 43)
+        copy(data, payload, 44)
+        copy(data, payload, 45)
+        copy(data, payload, 46)
+        copy(data, payload, 47)
+        copy(data, payload, 48)
+        copy(data, payload, 49)
+        copy(data, payload, 50)
+        copy(data, payload, 51)
+        copy(data, payload, 52)
+        copy(data, payload, 53)
+        copy(data, payload, 54)
 
         for i in flags:
             mask = 0b11111111
