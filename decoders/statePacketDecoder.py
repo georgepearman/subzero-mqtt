@@ -58,7 +58,7 @@ class Decoder:
         copy(data, payload, 32)
         data["Some Fan?"] = unpackAsUnsignedShort(payload[33:35])
         data["Water Flow Meter Raw"] = unpackAsUnsignedInt(payload[35:39])
-        data["Water Flow Meter"] = unpackAsUnsignedInt(payload[35:39]) * 0.54 # mL
+        data["Water Flow Meter"] = unpackAsUnsignedInt(payload[35:39]) * 0.837 # mL
         copy(data, payload, 39)
         copy(data, payload, 40)
         copy(data, payload, 41)
