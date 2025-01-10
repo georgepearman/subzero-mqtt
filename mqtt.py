@@ -53,7 +53,8 @@ def sensorConfig(sensorName, deviceClass, unit):
             "unit_of_measurement": unit,
             "unique_id": uniqueId,
             "state_topic": f"subzero/{model}/{sensorName}",
-            "name": sensorName
+            "name": sensorName,
+            "state_class": "measurement"
             }
 
 def binaryConfig(sensorName, deviceClass):
