@@ -1,6 +1,12 @@
 from .util import unpackAsSignedChar, unpackAsHex, unpackAsUnsignedInt, unpackAsUnsignedShort
 
 flags = {
+        6: {
+            "Refrigerator Cooling?": 0b00000010
+        },
+        18: {
+            "Freezer Cooling?": 0b11111111
+        },
         24: {
             "Water Dispensing": 0b1000000
         }
@@ -26,19 +32,17 @@ class Decoder:
         data["Model Code?"] = payload[0]
         data["Epoch Seconds"] = unpackAsUnsignedInt(payload[1:5])
         copy(data, payload, 5)
-        copy(data, payload, 6)
-        data["Refridgerator Cabinet Temperature"] = unpackAsSignedChar(payload[7])
+        data["Refrigerator Cabinet Temperature"] = unpackAsSignedChar(payload[7])
         copy(data, payload, 8)
-        copy(data, payload, 9)
+        data["Refrigerator Cooling Amps?"] = unpackAsSignedChar(payload[9])
         copy(data, payload, 10)
-        data["Refridgerator Evaporator Temperature"] = unpackAsSignedChar(payload[11])
+        data["Refrigerator Evaporator Temperature"] = unpackAsSignedChar(payload[11])
         copy(data, payload, 12)
         copy(data, payload, 13)
         copy(data, payload, 14)
-        data["Freezer Evaporator Fan RPM"] = unpackAsUnsignedShort(payload[15:17])
+        data["Freezer Evaporator Fan RPM?"] = unpackAsUnsignedShort(payload[15:17])
         data["Freezer Cabinet Temperature"] = unpackAsSignedChar(payload[17])
-        copy(data, payload, 18)
-        copy(data, payload, 19)
+        data["Freezer Cooling Amps?"] = unpackAsSignedChar(payload[19])
         data["Freezer Evaporator Temperature"] = unpackAsSignedChar(payload[20])
         copy(data, payload, 21)
         copy(data, payload, 22)
@@ -52,9 +56,9 @@ class Decoder:
         copy(data, payload, 30)
         copy(data, payload, 31)
         copy(data, payload, 32)
-        copy(data, payload, 33)
-        copy(data, payload, 34)
-        data["Water Flow Meter"] = unpackAsUnsignedInt(payload[35:39])
+        data["Some Fan?"] = unpackAsUnsignedShort(payload[33:35])
+        data["Water Flow Meter Raw"] = unpackAsUnsignedInt(payload[35:39])
+        data["Water Flow Meter"] = unpackAsUnsignedInt(payload[35:39]) * 0.54 # mL
         copy(data, payload, 39)
         copy(data, payload, 40)
         copy(data, payload, 41)

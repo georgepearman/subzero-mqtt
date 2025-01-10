@@ -2,8 +2,8 @@ from .util import unpackAsHex
 
 flags = {
     1: {
-        "Fridge Door Open": 0b00000010,
-        "Freezer Door Open": 0b00000100,
+        "Refrigerator Door": 0b00000010,
+        "Freezer Door": 0b00000100,
     }
 }
 
