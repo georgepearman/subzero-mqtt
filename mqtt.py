@@ -109,3 +109,4 @@ for packet in packetIterator:
             decoded = decoder.decode(interpretted.payload)
             for k in sorted(decoded.keys()):
                 updateKnowledge(interpretted, k, decoded[k])
+            mqttClient.loop()
