@@ -8,7 +8,7 @@ flags = {
             "Freezer Cooling?": 0b11111111
         },
         24: {
-            "Water Dispensing": 0b1000000
+            "Water Dispensing": 0b10000000
         }
 }
 
