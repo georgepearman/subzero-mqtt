@@ -56,7 +56,6 @@ class FooterState:
     def consume(self, b):
         self.packet.footer.append(b)
 
-        # TODO figure out the checksum algorithm and validate the packet
         if len(self.packet.footer) == 2: # 2 is observed length of footer
             self.packetEmitter.emit(self.packet)
             return DoneReadingState()
@@ -79,6 +78,18 @@ class PacketEmitter:
     def emit(self, packet):
         self.packets.append(packet)
 
+def validateChecksum(packet):
+    s = 229
+    for b in packet.header:
+        s += b
+    s += packet.length
+    for b in packet.payload:
+        s += b
+    for b in packet.footer:
+        s += b
+    return (s % 256) == 0
+
+
 def toPacketIterator(byteIterator):
     packetEmitter = PacketEmitter()
     state = startMatchingState(packetEmitter)
@@ -89,6 +100,9 @@ def toPacketIterator(byteIterator):
         if isinstance(state, DoneReadingState):
             state = startMatchingState(packetEmitter)
         for packet in packetEmitter.packets:
+            if not validateChecksum(packet):
+                print(f"Invalid checksum: {packet}")
+                continue
             if previousPacket and previousPacket == packet:
                 continue
             previousPacket = packet
