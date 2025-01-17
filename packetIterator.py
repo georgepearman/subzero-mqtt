@@ -78,33 +78,56 @@ class PacketEmitter:
     def emit(self, packet):
         self.packets.append(packet)
 
-def validateChecksum(packet):
-    s = 229
-    for b in packet.header:
-        s += b
-    s += packet.length
-    for b in packet.payload:
-        s += b
-    for b in packet.footer:
-        s += b
-    return (s % 256) == 0
+    def drainPackets(self):
+        result = self.packets
+        self.packets = []
+        return result
 
+class ChecksumValidationPacketEmitter:
+    def __init__(self, delegate):
+        self.delegate = delegate
+
+    def emit(self, packet):
+        if isinstance(packet, Packet) and not self.isValidChecksum(packet):
+            print(f"Invalid checksum: {packet}")
+        else:
+            self.delegate.emit(packet)
+
+    def drainPackets(self):
+        return self.delegate.drainPackets()
+
+    def isValidChecksum(self, packet):
+        s = 229
+        for b in packet.header:
+            s += b
+        s += packet.length
+        for b in packet.payload:
+            s += b
+        for b in packet.footer:
+            s += b
+        return (s % 256) == 0
+
+class DedupingPacketEmitter:
+    def __init__(self, delegate):
+        self.delegate = delegate
+        self.previousPacket = None
+
+    def emit(self, packet):
+        if self.previousPacket and self.previousPacket == packet:
+            return
+        self.previousPacket = packet
+        self.delegate.emit(packet)
+
+    def drainPackets(self):
+        return self.delegate.drainPackets()
 
 def toPacketIterator(byteIterator):
-    packetEmitter = PacketEmitter()
+    packetEmitter = ChecksumValidationPacketEmitter(DedupingPacketEmitter(PacketEmitter()))
     state = startMatchingState(packetEmitter)
-    previousPacket = None
 
     for b in byteIterator:
         state = state.consume(b)
         if isinstance(state, DoneReadingState):
             state = startMatchingState(packetEmitter)
-        for packet in packetEmitter.packets:
-            if not validateChecksum(packet):
-                print(f"Invalid checksum: {packet}")
-                continue
-            if previousPacket and previousPacket == packet:
-                continue
-            previousPacket = packet
+        for packet in packetEmitter.drainPackets():
             yield packet
-        packetEmitter.packets = []
