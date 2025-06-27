@@ -23,7 +23,7 @@ def interpret(packet):
             packet.payload[1],
             packet.payload[2:])
 
-byteIterator = getByteIterator("192.168.20.70", 8888)
+byteIterator = getByteIterator("192.168.20.79", 8888)
 packetIterator = toPacketIterator(byteIterator)
 
 decoders = [CommandPacketDecoder(), StatePacketDecoder(), DoorPacketDecoder()]

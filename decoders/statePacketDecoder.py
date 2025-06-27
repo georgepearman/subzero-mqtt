@@ -45,7 +45,7 @@ class Decoder:
         data["Freezer Cooling Amps?"] = unpackAsSignedChar(payload[19])
         data["Freezer Evaporator Temperature"] = unpackAsSignedChar(payload[20])
         copy(data, payload, 21)
-        copy(data, payload, 22)
+        copy(data, payload, 22) # 0 after reseting air filter, 20 before
         copy(data, payload, 23)
         # 24 is a flag - water dispensing
         copy(data, payload, 25)
